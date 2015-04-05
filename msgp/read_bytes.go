@@ -435,6 +435,12 @@ func ReadInt64Bytes(b []byte) (i int64, o []byte, err error) {
 		o = b[9:]
 		return
 
+	case mfloat64:
+		var f float64
+		f, o, err = ReadFloat64Bytes(b)
+		i = int64(f)
+		return
+
 	default:
 		err = badPrefix(IntType, lead)
 		return
