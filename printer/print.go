@@ -3,8 +3,8 @@ package printer
 import (
 	"bufio"
 	"fmt"
-	"github.com/tinylib/msgp/gen"
-	"github.com/tinylib/msgp/parse"
+	"github.com/appneta/msgp/gen"
+	"github.com/appneta/msgp/parse"
 	"github.com/ttacon/chalk"
 	"golang.org/x/tools/imports"
 	"io"
@@ -64,7 +64,7 @@ func generate(file string, f *parse.FileSet, mode gen.Method) error {
 	if err != nil {
 		return err
 	}
-	err = writeImportHeader(outwr, "github.com/tinylib/msgp/msgp")
+	err = writeImportHeader(outwr, "github.com/appneta/msgp/msgp")
 	if err != nil {
 		return err
 	}
@@ -84,7 +84,7 @@ func generate(file string, f *parse.FileSet, mode gen.Method) error {
 		if err != nil {
 			return err
 		}
-		err = writeImportHeader(testwr, "bytes", "github.com/tinylib/msgp/msgp", "testing")
+		err = writeImportHeader(testwr, "bytes", "github.com/appneta/msgp/msgp", "testing")
 	}
 	return f.PrintTo(gen.NewPrinter(mode, outwr, testwr))
 }
@@ -94,7 +94,7 @@ func writePkgHeader(w io.Writer, name string) error {
 	if err != nil {
 		return err
 	}
-	_, err = io.WriteString(w, "// NOTE: THIS FILE WAS PRODUCED BY THE\n// MSGP CODE GENERATION TOOL (github.com/tinylib/msgp)\n// DO NOT EDIT\n\n")
+	_, err = io.WriteString(w, "// NOTE: THIS FILE WAS PRODUCED BY THE\n// MSGP CODE GENERATION TOOL (github.com/appneta/msgp)\n// DO NOT EDIT\n\n")
 	return err
 }
 
