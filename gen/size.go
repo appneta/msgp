@@ -2,6 +2,8 @@ package gen
 
 import (
 	"fmt"
+	"github.com/tinylib/msgp/msgp"
+	"io"
 	"strconv"
 )
 
@@ -18,9 +20,23 @@ const (
 	expr
 )
 
+func sizes(w io.Writer) *sizeGen {
+	return &sizeGen{
+		p:     printer{w: w},
+		state: assign,
+	}
+}
+
 type sizeGen struct {
+	passes
 	p     printer
 	state sizeState
+}
+
+func (s *sizeGen) Method() Method { return Size }
+
+func (s *sizeGen) Apply(dirs []string) error {
+	return nil
 }
 
 func builtinSize(typ string) string {
@@ -55,6 +71,10 @@ func (s *sizeGen) Execute(p Elem) error {
 	if !s.p.ok() {
 		return s.p.err
 	}
+	p = s.applyall(p)
+	if p == nil {
+		return nil
+	}
 	if !IsPrintable(p) {
 		return nil
 	}
@@ -70,8 +90,12 @@ func (s *sizeGen) gStruct(st *Struct) {
 	if !s.p.ok() {
 		return
 	}
+
+	nfields := uint32(len(st.Fields))
+
 	if st.AsTuple {
-		s.addConstant(builtinSize(arrayHeader))
+		data := msgp.AppendArrayHeader(nil, nfields)
+		s.addConstant(strconv.Itoa(len(data)))
 		for i := range st.Fields {
 			if !s.p.ok() {
 				return
@@ -79,10 +103,12 @@ func (s *sizeGen) gStruct(st *Struct) {
 			next(s, st.Fields[i].FieldElem)
 		}
 	} else {
-		s.addConstant(builtinSize(mapHeader))
+		data := msgp.AppendMapHeader(nil, nfields)
+		s.addConstant(strconv.Itoa(len(data)))
 		for i := range st.Fields {
-			s.addConstant(builtinSize("StringPrefix"))
-			s.addConstant(strconv.Itoa(len(st.Fields[i].FieldTag)))
+			data = data[:0]
+			data = msgp.AppendString(data, st.Fields[i].FieldTag)
+			s.addConstant(strconv.Itoa(len(data)))
 			next(s, st.Fields[i].FieldElem)
 		}
 	}
@@ -195,6 +221,28 @@ func fixedsizeExpr(e Elem) (string, bool) {
 		if fixedSize(e.Value) {
 			return builtinSize(e.BaseName()), true
 		}
+	case *Struct:
+		var str string
+		for _, f := range e.Fields {
+			if fs, ok := fixedsizeExpr(f.FieldElem); ok {
+				if str == "" {
+					str = fs
+				} else {
+					str += "+" + fs
+				}
+			} else {
+				return "", false
+			}
+		}
+		var hdrlen int
+		mhdr := msgp.AppendMapHeader(nil, uint32(len(e.Fields)))
+		hdrlen += len(mhdr)
+		var strbody []byte
+		for _, f := range e.Fields {
+			strbody = msgp.AppendString(strbody[:0], f.FieldTag)
+			hdrlen += len(strbody)
+		}
+		return fmt.Sprintf("%d + %s", hdrlen, str), true
 	}
 	return "", false
 }

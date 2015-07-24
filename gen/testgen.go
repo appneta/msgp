@@ -17,32 +17,52 @@ var (
 // "Type{}" syntax.
 // we should support all the types.
 
-type mtestGen struct{ io.Writer }
+func mtest(w io.Writer) *mtestGen {
+	return &mtestGen{w: w}
+}
 
-func (m mtestGen) Execute(p Elem) error {
-	if IsPrintable(p) {
+type mtestGen struct {
+	passes
+	w io.Writer
+}
+
+func (m *mtestGen) Execute(p Elem) error {
+	p = m.applyall(p)
+	if p != nil && IsPrintable(p) {
 		switch p.(type) {
 		case *Struct, *Array, *Slice, *Map:
-			return marshalTestTempl.Execute(m.Writer, p)
+			return marshalTestTempl.Execute(m.w, p)
 		}
 	}
 	return nil
 }
 
-type etestGen struct{ io.Writer }
+func (m *mtestGen) Method() Method { return marshaltest }
 
-func (e etestGen) Execute(p Elem) error {
-	if IsPrintable(p) {
+type etestGen struct {
+	passes
+	w io.Writer
+}
+
+func etest(w io.Writer) *etestGen {
+	return &etestGen{w: w}
+}
+
+func (e *etestGen) Execute(p Elem) error {
+	p = e.applyall(p)
+	if p != nil && IsPrintable(p) {
 		switch p.(type) {
 		case *Struct, *Array, *Slice, *Map:
-			return encodeTestTempl.Execute(e.Writer, p)
+			return encodeTestTempl.Execute(e.w, p)
 		}
 	}
 	return nil
 }
+
+func (e *etestGen) Method() Method { return encodetest }
 
 func init() {
-	template.Must(marshalTestTempl.Parse(`func Test{{.TypeName}}MarshalUnmarshal(t *testing.T) {
+	template.Must(marshalTestTempl.Parse(`func TestMarshalUnmarshal{{.TypeName}}(t *testing.T) {
 	v := {{.TypeName}}{}
 	bts, err := v.MarshalMsg(nil)
 	if err != nil {
@@ -65,7 +85,7 @@ func init() {
 	}
 }
 
-func Benchmark{{.TypeName}}MarshalMsg(b *testing.B) {
+func BenchmarkMarshalMsg{{.TypeName}}(b *testing.B) {
 	v := {{.TypeName}}{}
 	b.ReportAllocs()
 	b.ResetTimer()
@@ -74,7 +94,7 @@ func Benchmark{{.TypeName}}MarshalMsg(b *testing.B) {
 	}
 }
 
-func Benchmark{{.TypeName}}AppendMsg(b *testing.B) {
+func BenchmarkAppendMsg{{.TypeName}}(b *testing.B) {
 	v := {{.TypeName}}{}
 	bts := make([]byte, 0, v.Msgsize())
 	bts, _ = v.MarshalMsg(bts[0:0])
@@ -86,7 +106,7 @@ func Benchmark{{.TypeName}}AppendMsg(b *testing.B) {
 	}
 }
 
-func Benchmark{{.TypeName}}Unmarshal(b *testing.B) {
+func BenchmarkUnmarshal{{.TypeName}}(b *testing.B) {
 	v := {{.TypeName}}{}
 	bts, _ := v.MarshalMsg(nil)
 	b.ReportAllocs()
@@ -102,7 +122,7 @@ func Benchmark{{.TypeName}}Unmarshal(b *testing.B) {
 
 `))
 
-	template.Must(encodeTestTempl.Parse(`func Test{{.TypeName}}EncodeDecode(t *testing.T) {
+	template.Must(encodeTestTempl.Parse(`func TestEncodeDecode{{.TypeName}}(t *testing.T) {
 	v := {{.TypeName}}{}
 	var buf bytes.Buffer
 	msgp.Encode(&buf, &v)
@@ -126,7 +146,7 @@ func Benchmark{{.TypeName}}Unmarshal(b *testing.B) {
 	}
 }
 
-func Benchmark{{.TypeName}}Encode(b *testing.B) {
+func BenchmarkEncode{{.TypeName}}(b *testing.B) {
 	v := {{.TypeName}}{}
 	var buf bytes.Buffer 
 	msgp.Encode(&buf, &v)
@@ -140,7 +160,7 @@ func Benchmark{{.TypeName}}Encode(b *testing.B) {
 	en.Flush()
 }
 
-func Benchmark{{.TypeName}}Decode(b *testing.B) {
+func BenchmarkDecode{{.TypeName}}(b *testing.B) {
 	v := {{.TypeName}}{}
 	var buf bytes.Buffer
 	msgp.Encode(&buf, &v)

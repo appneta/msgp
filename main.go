@@ -1,3 +1,25 @@
+// msgp is a code generation tool for
+// creating methods to serialize and de-serialize
+// Go data structures to and from MessagePack.
+//
+// This package is targeted at the `go generate` tool.
+// To use it, include the following directive in a
+// go source file with types requiring source generation:
+//
+//     //go:generate msgp
+//
+// The go generate tool should set the proper environment variables for
+// the generator to execute without any command-line flags. However, the
+// following options are supported, if you need them:
+//
+//  -o = output file name (default is {input}_gen.go)
+//  -file = input file name (or directory; default is $GOFILE, which is set by the `go generate` command)
+//  -io = satisfy the `msgp.Decodable` and `msgp.Encodable` interfaces (default is true)
+//  -marshal = satisfy the `msgp.Marshaler` and `msgp.Unmarshaler` interfaces (default is true)
+//  -tests = generate tests and benchmarks (default is true)
+//
+// For more information, please read README.md, and the wiki at github.com/tinylib/msgp
+//
 package main
 
 import (
@@ -7,25 +29,25 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/tinylib/msgp/gen"
 	"github.com/tinylib/msgp/parse"
 	"github.com/tinylib/msgp/printer"
 	"github.com/ttacon/chalk"
 )
 
 var (
-	out     = flag.String("o", "", "output file")
-	file    = flag.String("file", "", "input file")
-	pkg     = flag.String("pkg", "", "output package")
-	encode  = flag.Bool("io", true, "create Encode and Decode methods")
-	marshal = flag.Bool("marshal", true, "create Marshal and Unmarshal methods")
-	tests   = flag.Bool("tests", true, "create tests and benchmarks")
+	out        = flag.String("o", "", "output file")
+	file       = flag.String("file", "", "input file")
+	encode     = flag.Bool("io", true, "create Encode and Decode methods")
+	marshal    = flag.Bool("marshal", true, "create Marshal and Unmarshal methods")
+	tests      = flag.Bool("tests", true, "create tests and benchmarks")
+	unexported = flag.Bool("unexported", false, "also process unexported types")
 )
 
 func main() {
 	flag.Parse()
 
-	// GOFILE and GOPACKAGE are
-	// set by `go generate`
+	// GOFILE is set by go generate
 	if *file == "" {
 		*file = os.Getenv("GOFILE")
 		if *file == "" {
@@ -34,59 +56,52 @@ func main() {
 		}
 	}
 
-	if *pkg == "" {
-		*pkg = os.Getenv("GOPACKAGE")
-	}
-
-	var mode printer.Mode
+	var mode gen.Method
 	if *encode {
-		mode |= printer.Encode
+		mode |= (gen.Encode | gen.Decode | gen.Size)
 	}
 	if *marshal {
-		mode |= printer.Marshal
+		mode |= (gen.Marshal | gen.Unmarshal | gen.Size)
 	}
-	if *tests && mode != printer.Zero {
-		mode |= printer.Test
+	if *tests {
+		mode |= gen.Test
 	}
 
-	if mode == printer.Zero {
+	if mode&^gen.Test == 0 {
 		fmt.Println(chalk.Red.Color("No methods to generate; -io=false && -marshal=false"))
 		os.Exit(1)
 	}
 
-	if err := Run(*pkg, *file, mode); err != nil {
+	if err := Run(*file, mode, *unexported); err != nil {
 		fmt.Println(chalk.Red.Color(err.Error()))
 		os.Exit(1)
 	}
 }
 
-// Run writes all methods using the associated file/path and package.
-// (The package is only relevant for writing the new file's package declaration.)
-func Run(gopkg string, gofile string, mode printer.Mode) error {
+// Run writes all methods using the associated file or path, e.g.
+//
+//	err := msgp.Run("path/to/myfile.go", gen.Size|gen.Marshal|gen.Unmarshal|gen.Test, false)
+//
+func Run(gofile string, mode gen.Method, unexported bool) error {
+	if mode&^gen.Test == 0 {
+		return nil
+	}
 	fmt.Println(chalk.Magenta.Color("======== MessagePack Code Generator ======="))
 	fmt.Printf(chalk.Magenta.Color(">>> Input: \"%s\"...\n"), gofile)
-	elems, pkgName, err := parse.Elems(gofile)
+	fs, err := parse.File(gofile, unexported)
 	if err != nil {
 		return err
 	}
 
-	// use the parsed
-	// package name if it
-	// isn't set from $GOPACKAGE
-	// or -pkg
-	if gopkg == "" {
-		gopkg = pkgName
-	}
-
-	if len(elems) == 0 {
-		fmt.Println(chalk.Magenta.Color("No structs requiring code generation were found!"))
+	if len(fs.Identities) == 0 {
+		fmt.Println(chalk.Magenta.Color("No types requiring code generation were found!"))
 		return nil
 	}
 
-	newfile := newFilename(gofile, pkgName)
-	return printer.PrintFile(newfile, gopkg, elems, mode)
+	return printer.PrintFile(newFilename(gofile, fs.Package), fs, mode)
 }
 
+// picks a new file name based on input flags and input filename(s).
 func newFilename(old string, pkg string) string {
 	if *out != "" {
 		if pre := strings.TrimPrefix(*out, old); len(pre) > 0 &&

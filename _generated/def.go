@@ -23,10 +23,18 @@ type Block [32]byte
 // tests edge-cases with
 // compiling size compilation.
 type X struct {
-	Values [32]byte    // should compile to 32*msgp.ByteSize; encoded as Bin
-	More   Block       // should be identical to the above
-	Others [][32]int32 // should compile to len(x.Others)*32*msgp.Int32Size
-	Matrix [][]int32   // should not optimize
+	Values    [32]byte    // should compile to 32*msgp.ByteSize; encoded as Bin
+	More      Block       // should be identical to the above
+	Others    [][32]int32 // should compile to len(x.Others)*32*msgp.Int32Size
+	Matrix    [][]int32   // should not optimize
+	ManyFixed []Fixed
+}
+
+// test fixed-size struct
+// size compilation
+type Fixed struct {
+	A float64
+	B bool
 }
 
 type TestType struct {
@@ -140,10 +148,12 @@ func myenumStr(s string) MyEnum {
 	}
 }
 
+// test pass-specific directive
+//msgp:decode ignore Insane
+
 type Insane [3]map[string]struct{ A, B CustomInt }
 
 type Custom struct {
-	Int   Insane               `msg:"mapstrint"`
 	Bts   CustomBytes          `msg:"bts"`
 	Mp    map[string]*Embedded `msg:"mp"`
 	Enums []MyEnum             `msg:"enums"` // test explicit enum shim

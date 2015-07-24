@@ -184,6 +184,17 @@ func (mw *Writer) require(n int) (int, error) {
 	return wl, nil
 }
 
+func (mw *Writer) Append(b ...byte) error {
+	if mw.avail() < len(b) {
+		err := mw.flush()
+		if err != nil {
+			return err
+		}
+	}
+	mw.wloc += copy(mw.buf[mw.wloc:], b)
+	return nil
+}
+
 // push one byte onto the buffer
 //
 // NOTE: this is a hot code path
@@ -407,6 +418,20 @@ func (mw *Writer) WriteBytes(b []byte) error {
 	return err
 }
 
+// WriteBytesHeader writes just the size header
+// of a MessagePack 'bin' object. The user is responsible
+// for then writing 'sz' more bytes into the stream.
+func (mw *Writer) WriteBytesHeader(sz uint32) error {
+	switch {
+	case sz < math.MaxUint8:
+		return mw.prefix8(mbin8, uint8(sz))
+	case sz < math.MaxUint16:
+		return mw.prefix16(mbin16, uint16(sz))
+	default:
+		return mw.prefix32(mbin32, sz)
+	}
+}
+
 // WriteBool writes a bool to the writer
 func (mw *Writer) WriteBool(b bool) error {
 	if b {
@@ -434,6 +459,45 @@ func (mw *Writer) WriteString(s string) error {
 		return err
 	}
 	return mw.writeString(s)
+}
+
+// WriteStringHeader writes just the string size
+// header of a MessagePack 'str' object. The user
+// is responsible for writing 'sz' more valid UTF-8
+// bytes to the stream.
+func (mw *Writer) WriteStringHeader(sz uint32) error {
+	switch {
+	case sz < 32:
+		return mw.push(wfixstr(uint8(sz)))
+	case sz < math.MaxUint8:
+		return mw.prefix8(mstr8, uint8(sz))
+	case sz < math.MaxUint16:
+		return mw.prefix16(mstr16, uint16(sz))
+	default:
+		return mw.prefix32(mstr32, sz)
+	}
+}
+
+// WriteStringFromBytes writes a 'str' object
+// from a []byte.
+func (mw *Writer) WriteStringFromBytes(str []byte) error {
+	sz := uint32(len(str))
+	var err error
+	switch {
+	case sz < 32:
+		err = mw.push(wfixstr(uint8(sz)))
+	case sz < math.MaxUint8:
+		err = mw.prefix8(mstr8, uint8(sz))
+	case sz < math.MaxUint16:
+		err = mw.prefix16(mstr16, uint16(sz))
+	default:
+		err = mw.prefix32(mstr32, sz)
+	}
+	if err != nil {
+		return err
+	}
+	_, err = mw.Write(str)
+	return err
 }
 
 // WriteComplex64 writes a complex64 to the writer
