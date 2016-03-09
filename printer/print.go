@@ -45,7 +45,6 @@ func PrintFile(file string, f *parse.FileSet, mode gen.Method) error {
 	if err != nil {
 		return err
 	}
-	infof(">>> Done.\n")
 	return nil
 }
 
