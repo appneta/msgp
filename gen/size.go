@@ -2,9 +2,10 @@ package gen
 
 import (
 	"fmt"
-	"github.com/tinylib/msgp/msgp"
 	"io"
 	"strconv"
+
+	"github.com/appneta/msgp/msgp"
 )
 
 type sizeState uint8
