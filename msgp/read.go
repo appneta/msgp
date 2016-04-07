@@ -556,7 +556,7 @@ func (m *Reader) ReadInt64() (i int64, err error) {
 		return
 
 	case muint8:
-		p, err = m.r.Next(2)
+		p, err = m.R.Next(2)
 		if err != nil {
 			return
 		}
@@ -564,7 +564,7 @@ func (m *Reader) ReadInt64() (i int64, err error) {
 		return
 
 	case muint16:
-		p, err = m.r.Next(3)
+		p, err = m.R.Next(3)
 		if err != nil {
 			return
 		}
@@ -572,7 +572,7 @@ func (m *Reader) ReadInt64() (i int64, err error) {
 		return
 
 	case muint32:
-		p, err = m.r.Next(5)
+		p, err = m.R.Next(5)
 		if err != nil {
 			return
 		}
@@ -580,7 +580,7 @@ func (m *Reader) ReadInt64() (i int64, err error) {
 		return
 
 	case muint64:
-		p, err = m.r.Next(9)
+		p, err = m.R.Next(9)
 		if err != nil {
 			return
 		}
