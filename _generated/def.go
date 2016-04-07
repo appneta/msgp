@@ -1,9 +1,10 @@
 package _generated
 
 import (
-	"github.com/tinylib/msgp/msgp"
 	"os"
 	"time"
+
+	"github.com/appneta/msgp/msgp"
 )
 
 //go:generate msgp -o generated.go
@@ -68,6 +69,17 @@ type TestFast struct {
 	Lat, Long, Alt float64 // test inline decl
 	Data           []byte
 }
+
+// Test nested aliases
+type FastAlias TestFast
+type AliasContainer struct {
+	Fast FastAlias
+}
+
+// Test dependency resolution
+type IntA int
+type IntB IntA
+type IntC IntB
 
 type TestHidden struct {
 	A   string

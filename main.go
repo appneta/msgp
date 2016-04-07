@@ -29,9 +29,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/tinylib/msgp/gen"
-	"github.com/tinylib/msgp/parse"
-	"github.com/tinylib/msgp/printer"
+	"github.com/appneta/msgp/gen"
+	"github.com/appneta/msgp/parse"
+	"github.com/appneta/msgp/printer"
 	"github.com/ttacon/chalk"
 )
 
@@ -87,7 +87,7 @@ func Run(gofile string, mode gen.Method, unexported bool) error {
 		return nil
 	}
 	fmt.Println(chalk.Magenta.Color("======== MessagePack Code Generator ======="))
-	fmt.Printf(chalk.Magenta.Color(">>> Input: \"%s\"...\n"), gofile)
+	fmt.Printf(chalk.Magenta.Color(">>> Input: \"%s\"\n"), gofile)
 	fs, err := parse.File(gofile, unexported)
 	if err != nil {
 		return err

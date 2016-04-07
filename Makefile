@@ -11,7 +11,7 @@ MGEN = ./msgp/defgen_test.go
 
 SHELL := /bin/bash
 
-BIN = $(GOPATH)/bin/msgp
+BIN = $(GOBIN)/msgp
 
 .PHONY: clean wipe install get-deps bench all
 
@@ -46,4 +46,10 @@ get-deps:
 all: install $(GGEN) $(MGEN)
 
 # travis CI enters here
-travis: get-deps test
+travis:
+	go get -d -t ./...
+	go build -o "$${GOPATH%%:*}/bin/msgp" .
+	go generate ./msgp
+	go generate ./_generated
+	go test ./msgp
+	go test ./_generated
