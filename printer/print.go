@@ -65,6 +65,18 @@ func goformat(file string, data []byte) <-chan error {
 	return out
 }
 
+func dedupImports(imp []string) []string {
+	m := make(map[string]struct{})
+	for i := range imp {
+		m[imp[i]] = struct{}{}
+	}
+	r := []string{}
+	for k := range m {
+		r = append(r, k)
+	}
+	return r
+}
+
 func generate(f *parse.FileSet, mode gen.Method) (*bytes.Buffer, *bytes.Buffer, error) {
 	outbuf := bytes.NewBuffer(make([]byte, 0, 4096))
 	writePkgHeader(outbuf, f.Package)
@@ -96,7 +108,12 @@ func writePkgHeader(b *bytes.Buffer, name string) {
 func writeImportHeader(b *bytes.Buffer, imports ...string) {
 	b.WriteString("import (\n")
 	for _, im := range imports {
-		fmt.Fprintf(b, "\t%q\n", im)
+		if im[len(im)-1] == '"' {
+			// support aliased imports
+			fmt.Fprintf(b, "\t%s\n", im)
+		} else {
+			fmt.Fprintf(b, "\t%q\n", im)
+		}
 	}
 	b.WriteString(")\n\n")
 }
