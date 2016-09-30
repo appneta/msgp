@@ -10,7 +10,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/appneta/msgp/gen"
+	"github.com/tracelytics/msgp/gen"
 	"github.com/ttacon/chalk"
 )
 

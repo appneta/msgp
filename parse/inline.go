@@ -1,7 +1,7 @@
 package parse
 
 import (
-	"github.com/appneta/msgp/gen"
+	"github.com/tracelytics/msgp/gen"
 )
 
 // This file defines when and how we

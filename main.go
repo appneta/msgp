@@ -29,9 +29,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/appneta/msgp/gen"
-	"github.com/appneta/msgp/parse"
-	"github.com/appneta/msgp/printer"
+	"github.com/tracelytics/msgp/gen"
+	"github.com/tracelytics/msgp/parse"
+	"github.com/tracelytics/msgp/printer"
 	"github.com/ttacon/chalk"
 )
 

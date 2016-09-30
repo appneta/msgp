@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/appneta/msgp/msgp"
+	"github.com/tracelytics/msgp/msgp"
 )
 
 func encode(w io.Writer) *encodeGen {
