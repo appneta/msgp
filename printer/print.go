@@ -7,8 +7,8 @@ import (
 	"io/ioutil"
 	"strings"
 
-	"github.com/appneta/msgp/gen"
-	"github.com/appneta/msgp/parse"
+	"github.com/tracelytics/msgp/gen"
+	"github.com/tracelytics/msgp/parse"
 	"github.com/ttacon/chalk"
 	"golang.org/x/tools/imports"
 )
@@ -80,7 +80,7 @@ func dedupImports(imp []string) []string {
 func generate(f *parse.FileSet, mode gen.Method) (*bytes.Buffer, *bytes.Buffer, error) {
 	outbuf := bytes.NewBuffer(make([]byte, 0, 4096))
 	writePkgHeader(outbuf, f.Package)
-	writeImportHeader(outbuf, "github.com/appneta/msgp/msgp")
+	writeImportHeader(outbuf, "github.com/tracelytics/msgp/msgp")
 
 	var testbuf *bytes.Buffer
 	var testwr io.Writer
@@ -88,9 +88,9 @@ func generate(f *parse.FileSet, mode gen.Method) (*bytes.Buffer, *bytes.Buffer, 
 		testbuf = bytes.NewBuffer(make([]byte, 0, 4096))
 		writePkgHeader(testbuf, f.Package)
 		if mode&(gen.Encode|gen.Decode) != 0 {
-			writeImportHeader(testbuf, "bytes", "github.com/appneta/msgp/msgp", "testing")
+			writeImportHeader(testbuf, "bytes", "github.com/tracelytics/msgp/msgp", "testing")
 		} else {
-			writeImportHeader(testbuf, "github.com/appneta/msgp/msgp", "testing")
+			writeImportHeader(testbuf, "github.com/tracelytics/msgp/msgp", "testing")
 		}
 		testwr = testbuf
 	}
@@ -102,7 +102,7 @@ func writePkgHeader(b *bytes.Buffer, name string) {
 	b.WriteString("package ")
 	b.WriteString(name)
 	b.WriteByte('\n')
-	b.WriteString("// NOTE: THIS FILE WAS PRODUCED BY THE\n// MSGP CODE GENERATION TOOL (github.com/appneta/msgp)\n// DO NOT EDIT\n\n")
+	b.WriteString("// NOTE: THIS FILE WAS PRODUCED BY THE\n// MSGP CODE GENERATION TOOL (github.com/tracelytics/msgp)\n// DO NOT EDIT\n\n")
 }
 
 func writeImportHeader(b *bytes.Buffer, imports ...string) {
