@@ -461,8 +461,8 @@ func (mw *Writer) WriteString(s string) error {
 	switch {
 	case sz <= 31:
 		err = mw.push(wfixstr(uint8(sz)))
-	case sz <= math.MaxUint8:
-		err = mw.prefix8(mstr8, uint8(sz))
+	// case sz <= math.MaxUint8:
+	// 	err = mw.prefix8(mstr8, uint8(sz))
 	case sz <= math.MaxUint16:
 		err = mw.prefix16(mstr16, uint16(sz))
 	default:
@@ -482,8 +482,8 @@ func (mw *Writer) WriteStringHeader(sz uint32) error {
 	switch {
 	case sz <= 31:
 		return mw.push(wfixstr(uint8(sz)))
-	case sz <= math.MaxUint8:
-		return mw.prefix8(mstr8, uint8(sz))
+	// case sz <= math.MaxUint8:
+	// 	return mw.prefix8(mstr8, uint8(sz))
 	case sz <= math.MaxUint16:
 		return mw.prefix16(mstr16, uint16(sz))
 	default:
@@ -499,8 +499,8 @@ func (mw *Writer) WriteStringFromBytes(str []byte) error {
 	switch {
 	case sz <= 31:
 		err = mw.push(wfixstr(uint8(sz)))
-	case sz <= math.MaxUint8:
-		err = mw.prefix8(mstr8, uint8(sz))
+	// case sz <= math.MaxUint8:
+	// 	err = mw.prefix8(mstr8, uint8(sz))
 	case sz <= math.MaxUint16:
 		err = mw.prefix16(mstr16, uint16(sz))
 	default:

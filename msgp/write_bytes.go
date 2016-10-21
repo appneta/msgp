@@ -211,10 +211,10 @@ func AppendString(b []byte, s string) []byte {
 		o, n = ensure(b, 1+sz)
 		o[n] = wfixstr(uint8(sz))
 		n++
-	case sz <= math.MaxUint8:
-		o, n = ensure(b, 2+sz)
-		prefixu8(o[n:], mstr8, uint8(sz))
-		n += 2
+	// case sz <= math.MaxUint8:
+	// 	o, n = ensure(b, 2+sz)
+	// 	prefixu8(o[n:], mstr8, uint8(sz))
+	// 	n += 2
 	case sz <= math.MaxUint16:
 		o, n = ensure(b, 3+sz)
 		prefixu16(o[n:], mstr16, uint16(sz))
@@ -238,10 +238,10 @@ func AppendStringFromBytes(b []byte, str []byte) []byte {
 		o, n = ensure(b, 1+sz)
 		o[n] = wfixstr(uint8(sz))
 		n++
-	case sz <= math.MaxUint8:
-		o, n = ensure(b, 2+sz)
-		prefixu8(o[n:], mstr8, uint8(sz))
-		n += 2
+	// case sz <= math.MaxUint8:
+	// 	o, n = ensure(b, 2+sz)
+	// 	prefixu8(o[n:], mstr8, uint8(sz))
+	// 	n += 2
 	case sz <= math.MaxUint16:
 		o, n = ensure(b, 3+sz)
 		prefixu16(o[n:], mstr16, uint16(sz))
