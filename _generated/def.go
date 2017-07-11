@@ -25,6 +25,7 @@ type Block [32]byte
 // compiling size compilation.
 type X struct {
 	Values    [32]byte    // should compile to 32*msgp.ByteSize; encoded as Bin
+	ValuesPtr *[32]byte   // check (*)[:] deref
 	More      Block       // should be identical to the above
 	Others    [][32]int32 // should compile to len(x.Others)*32*msgp.Int32Size
 	Matrix    [][]int32   // should not optimize
@@ -52,6 +53,7 @@ type TestType struct {
 	Num      msgp.Number `msg:"num"`
 	Slice1   []string
 	Slice2   []string
+	SlicePtr *[]string
 }
 
 //msgp:tuple Object
@@ -114,6 +116,14 @@ type Things struct {
 	Ext   *msgp.RawExtension                `msg:"ext,extension"`  // test extension
 	Oext  msgp.RawExtension                 `msg:"oext,extension"` // test extension reference
 }
+
+//msgp:shim SpecialID as:[]byte using:toBytes/fromBytes
+
+type SpecialID string
+type TestObj struct{ ID1, ID2 SpecialID }
+
+func toBytes(id SpecialID) []byte   { return []byte(string(id)) }
+func fromBytes(id []byte) SpecialID { return SpecialID(string(id)) }
 
 type MyEnum byte
 
@@ -191,3 +201,13 @@ type FileHandle struct {
 
 type CustomInt int
 type CustomBytes []byte
+
+type Wrapper struct {
+	Tree *Tree
+}
+
+type Tree struct {
+	Children []Tree
+	Element  int
+	Parent   *Wrapper
+}
