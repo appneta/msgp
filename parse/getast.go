@@ -10,7 +10,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/tracelytics/msgp/gen"
+	"github.com/librato/msgp/gen"
 	"github.com/ttacon/chalk"
 )
 

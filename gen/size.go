@@ -5,7 +5,7 @@ import (
 	"io"
 	"strconv"
 
-	"github.com/tracelytics/msgp/msgp"
+	"github.com/librato/msgp/msgp"
 )
 
 type sizeState uint8

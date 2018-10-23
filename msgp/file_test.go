@@ -9,7 +9,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/tracelytics/msgp/msgp"
+	"github.com/librato/msgp/msgp"
 )
 
 type rawBytes []byte
