@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"testing"
 
-	"github.com/tracelytics/msgp/msgp"
+	"github.com/librato/msgp/msgp"
 )
 
 func TestConvertFromEncodeError(t *testing.T) {

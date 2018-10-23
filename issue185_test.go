@@ -13,7 +13,7 @@ import (
 	"testing"
 	"text/template"
 
-	"github.com/tracelytics/msgp/gen"
+	"github.com/librato/msgp/gen"
 )
 
 // When stuff's going wrong, you'll be glad this is here!

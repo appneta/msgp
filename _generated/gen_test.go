@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/tracelytics/msgp/msgp"
+	"github.com/librato/msgp/msgp"
 )
 
 // benchmark encoding a small, "fast" type.

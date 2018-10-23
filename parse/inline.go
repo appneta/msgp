@@ -1,7 +1,7 @@
 package parse
 
 import (
-	"github.com/tracelytics/msgp/gen"
+	"github.com/librato/msgp/gen"
 )
 
 // This file defines when and how we
